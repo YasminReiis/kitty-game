@@ -6,68 +6,46 @@
 <title>Kitty Run 💖</title>
 
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial;
-  }
+  body { margin:0; overflow:hidden; font-family:Arial; }
 
-  canvas {
-    display: none;
-    background: #fff;
-  }
+  canvas { display:none; background:#fff; }
 
   #menu, #finalScreen {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(#ffb6c1, #ffeef5);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    position:absolute;
+    width:100%; height:100%;
+    background:linear-gradient(#ffb6c1,#ffeef5);
+    display:flex; flex-direction:column;
+    justify-content:center; align-items:center;
   }
 
-  #finalScreen {
-    display: none;
-    text-align: center;
-  }
+  #finalScreen { display:none; text-align:center; }
 
-  h1 {
-    color: #ff1493;
-  }
-
-  p {
-    color: #ff69b4;
-  }
+  h1 { color:#ff1493; }
+  p { color:#ff69b4; }
 
   button {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 30px;
-    background: #ff1493;
-    color: white;
-    font-size: 18px;
-    margin-top: 20px;
+    padding:15px 30px;
+    border:none;
+    border-radius:30px;
+    background:#ff1493;
+    color:white;
+    font-size:18px;
+    margin-top:20px;
   }
 
-  #score, #record, #word, #jumpBtn {
-    display: none;
-  }
+  #score,#record,#word,#jumpBtn { display:none; }
 
-  #score { position: absolute; top: 10px; right: 15px; }
-  #record { position: absolute; top: 30px; right: 15px; }
-  #word { position: absolute; top: 10px; left: 20px; font-weight: bold; }
+  #score { position:absolute; top:10px; right:15px; }
+  #record { position:absolute; top:30px; right:15px; }
+  #word { position:absolute; top:10px; left:20px; font-weight:bold; }
 
   #jumpBtn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #ff69b4;
-    color: white;
+    position:fixed;
+    bottom:20px; right:20px;
+    width:80px; height:80px;
+    border-radius:50%;
+    background:#ff69b4;
+    color:white;
   }
 </style>
 </head>
@@ -97,9 +75,10 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// 🎵 música
-const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
+// 🎵 MUSICA (link funcionando)
+const music = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73467.mp3");
 music.loop = true;
+music.volume = 0.4;
 
 // 🎉 som final
 const finalSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
@@ -107,11 +86,13 @@ const finalSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang
 // iniciar
 document.getElementById("startBtn").onclick = () => {
   document.getElementById("menu").style.display = "none";
+
   canvas.style.display = "block";
   document.getElementById("score").style.display = "block";
   document.getElementById("record").style.display = "block";
   document.getElementById("word").style.display = "block";
   document.getElementById("jumpBtn").style.display = "block";
+
   music.play().catch(()=>{});
 };
 
@@ -129,14 +110,8 @@ document.getElementById("record").innerText = "Record: " + record;
 
 // player
 let kitty = {
-  x: 80,
-  y: 180,
-  width: 40,
-  height: 40,
-  dy: 0,
-  gravity: 0.7,
-  jumpForce: -14,
-  grounded: true
+  x:80, y:180, width:40, height:40,
+  dy:0, gravity:0.7, jumpForce:-14, grounded:true
 };
 
 let obstacles = [];
@@ -144,7 +119,7 @@ let score = 0;
 let gameOver = false;
 let obstacleTimer = 0;
 
-// 💖 FRASE
+// frase
 let message = "ANA EU TE AMO SUA GOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
@@ -152,163 +127,149 @@ let nextMilestone = 300;
 
 let flyingLetters = [];
 
-// 💖 CORAÇÕES
-let hearts = [];
-
 // pulo
-function jump() {
-  if (kitty.grounded) {
+function jump(){
+  if(kitty.grounded){
     kitty.dy = kitty.jumpForce;
     kitty.grounded = false;
-  } else if (gameOver) {
+  } else if(gameOver){
     resetGame();
   }
 }
 
-document.addEventListener("keydown", e => {
-  if (e.code === "Space") jump();
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space") jump();
 });
 document.getElementById("jumpBtn").onclick = jump;
 
 // update
-function update() {
-  if (gameOver) return;
+function update(){
+  if(gameOver) return;
 
   kitty.dy += kitty.gravity;
   kitty.y += kitty.dy;
 
-  if (kitty.y >= 180) {
-    kitty.y = 180;
-    kitty.dy = 0;
-    kitty.grounded = true;
+  if(kitty.y>=180){
+    kitty.y=180;
+    kitty.dy=0;
+    kitty.grounded=true;
   }
 
   obstacleTimer++;
-  if (obstacleTimer > 120) {
-    obstacles.push({ x: canvas.width, y: 190, width: 25, height: 35 });
-    obstacleTimer = 0;
+  if(obstacleTimer>120){
+    obstacles.push({x:canvas.width,y:190,width:25,height:35});
+    obstacleTimer=0;
   }
 
-  obstacles.forEach(obs => {
-    obs.x -= 4;
-
-    if (
-      kitty.x < obs.x + obs.width &&
-      kitty.x + kitty.width > obs.x &&
-      kitty.y < obs.y + obs.height &&
-      kitty.y + kitty.height > obs.y
-    ) {
-      gameOver = true;
+  obstacles.forEach(obs=>{
+    obs.x -=4;
+    if(
+      kitty.x<obs.x+obs.width &&
+      kitty.x+kitty.width>obs.x &&
+      kitty.y<obs.y+obs.height &&
+      kitty.y+kitty.height>obs.y
+    ){
+      gameOver=true;
     }
   });
 
-  obstacles = obstacles.filter(o => o.x > -50);
+  obstacles = obstacles.filter(o=>o.x>-50);
 
   score++;
+  document.getElementById("score").innerText = score;
 
   // letras
-  if (score >= nextMilestone && nextLetterIndex < message.length) {
+  if(score>=nextMilestone && nextLetterIndex<message.length){
     flyingLetters.push({
-      letter: message[nextLetterIndex],
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      targetX: 20 + (nextLetterIndex * 15),
-      targetY: 25,
-      done: false
+      letter:message[nextLetterIndex],
+      x:canvas.width/2,
+      y:canvas.height/2,
+      targetX:20+(nextLetterIndex*15),
+      targetY:25,
+      done:false
     });
 
     nextLetterIndex++;
-    nextMilestone += 200;
+    nextMilestone+=200;
   }
 
-  flyingLetters.forEach(l => {
-    if (!l.done) {
-      l.x += (l.targetX - l.x) * 0.1;
-      l.y += (l.targetY - l.y) * 0.1;
+  flyingLetters.forEach(l=>{
+    if(!l.done){
+      l.x += (l.targetX-l.x)*0.1;
+      l.y += (l.targetY-l.y)*0.1;
 
-      if (Math.abs(l.x - l.targetX) < 2) {
-        currentText += l.letter;
-        document.getElementById("word").innerText = currentText;
-        l.done = true;
+      if(Math.abs(l.x-l.targetX)<2){
+        currentText+=l.letter;
+        document.getElementById("word").innerText=currentText;
+        l.done=true;
       }
     }
   });
 
-  flyingLetters = flyingLetters.filter(l => !l.done);
+  flyingLetters = flyingLetters.filter(l=>!l.done);
 
-  document.getElementById("score").innerText = score;
-
-  // 💖 FINAL
-  if (currentText === message) {
-    gameOver = true;
+  // FINAL
+  if(currentText===message){
+    gameOver=true;
     showFinal();
   }
 }
 
-// 💖 FINAL
-function showFinal() {
+// final
+function showFinal(){
   music.pause();
   finalSound.play();
-
-  document.getElementById("finalScreen").style.display = "flex";
-
-  // corações subindo
-  setInterval(() => {
-    hearts.push({
-      x: Math.random() * window.innerWidth,
-      y: window.innerHeight,
-      size: 20 + Math.random() * 20
-    });
-  }, 200);
-
-  animateHearts();
+  document.getElementById("finalScreen").style.display="flex";
 }
 
-function animateHearts() {
-  const screen = document.getElementById("finalScreen");
+// desenho gatinha
+function drawKitty(){
+  ctx.fillStyle="#fff";
+  ctx.fillRect(kitty.x,kitty.y,40,40);
 
-  hearts.forEach(h => {
-    h.y -= 2;
-    let heart = document.createElement("div");
-    heart.innerText = "💖";
-    heart.style.position = "absolute";
-    heart.style.left = h.x + "px";
-    heart.style.top = h.y + "px";
-    heart.style.fontSize = h.size + "px";
-    screen.appendChild(heart);
-  });
+  ctx.fillStyle="#000";
+  ctx.fillRect(kitty.x+10,kitty.y+10,5,5);
+  ctx.fillRect(kitty.x+25,kitty.y+10,5,5);
 
-  requestAnimationFrame(animateHearts);
+  ctx.fillStyle="#ff69b4";
+  ctx.fillRect(kitty.x+18,kitty.y+18,6,4);
 }
 
 // draw
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  ctx.fillStyle = "#ffb6c1";
-  ctx.fillRect(0, 220, canvas.width, 5);
+  ctx.fillStyle="#ffb6c1";
+  ctx.fillRect(0,220,canvas.width,5);
 
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(kitty.x, kitty.y, 40, 40);
+  drawKitty();
 
-  ctx.fillStyle = "#ff1493";
-  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+  ctx.fillStyle="#ff1493";
+  obstacles.forEach(o=>{
+    ctx.fillRect(o.x,o.y,o.width,o.height);
+  });
+
+  flyingLetters.forEach(l=>{
+    ctx.fillStyle="#ff69b4";
+    ctx.font="28px Arial";
+    ctx.fillText(l.letter,l.x,l.y);
+  });
 }
 
 // loop
-function loop() {
+function loop(){
   update();
   draw();
   requestAnimationFrame(loop);
 }
 
-function resetGame() {
-  obstacles = [];
-  score = 0;
-  gameOver = false;
-  currentText = "";
-  nextLetterIndex = 0;
-  nextMilestone = 300;
+function resetGame(){
+  obstacles=[];
+  score=0;
+  gameOver=false;
+  currentText="";
+  nextLetterIndex=0;
+  nextMilestone=300;
 }
 
 loop();
