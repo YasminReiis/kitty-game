@@ -11,13 +11,12 @@
     overflow: hidden;
     background: linear-gradient(#ffeef5, #fff);
     font-family: Arial;
-    text-align: center;
   }
 
   canvas {
-    background: #fff;
     display: block;
     margin: auto;
+    background: #fff;
     border-bottom: 4px solid #ff69b4;
   }
 
@@ -29,6 +28,15 @@
     color: #ff1493;
   }
 
+  #word {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 20px;
+    color: #ff1493;
+    font-weight: bold;
+  }
+
   #jumpBtn {
     position: fixed;
     bottom: 20px;
@@ -38,7 +46,6 @@
     border-radius: 50%;
     background: #ff69b4;
     color: white;
-    font-size: 18px;
     border: none;
   }
 </style>
@@ -47,6 +54,7 @@
 <body>
 
 <div id="score">0</div>
+<div id="word"></div>
 <canvas id="game"></canvas>
 <button id="jumpBtn">Pular</button>
 
@@ -73,20 +81,18 @@ let kitty = {
 };
 
 let obstacles = [];
-let clouds = [];
 let score = 0;
-let speed = 4;
 let gameOver = false;
 
-// 💡 CONTROLE DE DISTÂNCIA
 let obstacleTimer = 0;
-let minDistance = 120; // distância mínima entre obstáculos
+let minDistance = 120;
 
-// 💖 EFEITO
-let showLove = false;
-let glowSize = 0;
+// 💖 PALAVRAS
+let message = "ANA EU TE AMOGOSTOSA";
+let currentText = "";
+let nextLetterIndex = 0;
+let nextMilestone = 300; // começa no 300
 
-// PULO
 function jump() {
   if (kitty.grounded) {
     kitty.dy = kitty.jumpForce;
@@ -100,8 +106,8 @@ document.addEventListener("keydown", e => {
   if (e.code === "Space") jump();
 });
 
-document.getElementById("jumpBtn").addEventListener("touchstart", jump);
 document.getElementById("jumpBtn").addEventListener("click", jump);
+document.getElementById("jumpBtn").addEventListener("touchstart", jump);
 
 // UPDATE
 function update() {
@@ -116,9 +122,7 @@ function update() {
     kitty.grounded = true;
   }
 
-  // 🚀 SPAWN CONTROLADO (AGORA FICA BOM)
   obstacleTimer++;
-
   if (obstacleTimer > minDistance) {
     obstacles.push({
       x: canvas.width,
@@ -130,7 +134,7 @@ function update() {
   }
 
   obstacles.forEach(obs => {
-    obs.x -= speed;
+    obs.x -= 4;
 
     if (
       kitty.x < obs.x + obs.width &&
@@ -144,23 +148,17 @@ function update() {
 
   obstacles = obstacles.filter(o => o.x > -50);
 
-  // nuvens
-  if (Math.random() < 0.01) {
-    clouds.push({
-      x: canvas.width,
-      y: Math.random() * 100 + 20,
-      size: Math.random() * 20 + 20
-    });
-  }
-
-  clouds.forEach(c => c.x -= 1);
-  clouds = clouds.filter(c => c.x > -50);
-
   score++;
 
-  if (score >= 1000) showLove = true;
+  // 💖 LIBERAR LETRAS
+  if (score >= nextMilestone && nextLetterIndex < message.length) {
+    currentText += message[nextLetterIndex];
+    nextLetterIndex++;
+    nextMilestone += 200; // próximo a cada 200 pontos
+  }
 
   document.getElementById("score").innerText = score;
+  document.getElementById("word").innerText = currentText;
 }
 
 // DESENHO
@@ -183,49 +181,20 @@ function drawKitty() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // nuvens
-  ctx.fillStyle = "#eee";
-  clouds.forEach(c => {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // chão
   ctx.fillStyle = "#ffb6c1";
   ctx.fillRect(0, 220, canvas.width, 5);
 
   drawKitty();
 
-  // obstáculos
   ctx.fillStyle = "#ff1493";
   obstacles.forEach(obs => {
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
   });
 
-  // 💖 brilho
-  if (showLove) {
-    glowSize += 0.5;
-
-    ctx.save();
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = "pink";
-
-    ctx.beginPath();
-    ctx.arc(canvas.width/2, 80, glowSize, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-
-    ctx.fillStyle = "#ff1493";
-    ctx.font = "32px Arial";
-    ctx.fillText("Ana te amo 💖", canvas.width/2 - 110, 90);
-  }
-
   if (gameOver) {
     ctx.fillStyle = "#ff1493";
     ctx.font = "20px Arial";
-    ctx.fillText("Toque ou aperte para reiniciar 💖", 50, 120);
+    ctx.fillText("Toque para reiniciar 💖", 50, 120);
   }
 }
 
@@ -238,13 +207,11 @@ function loop() {
 
 function resetGame() {
   obstacles = [];
-  clouds = [];
   score = 0;
-  speed = 4;
   gameOver = false;
-  showLove = false;
-  glowSize = 0;
-  obstacleTimer = 0;
+  currentText = "";
+  nextLetterIndex = 0;
+  nextMilestone = 300;
 }
 
 loop();
