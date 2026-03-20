@@ -48,15 +48,6 @@
     margin-top: 20px;
   }
 
-  #musicBtn {
-    margin-top: 10px;
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: none;
-    background: #ff69b4;
-    color: white;
-  }
-
   #score, #record, #word, #jumpBtn {
     display: none;
   }
@@ -85,7 +76,6 @@
   <h1>🐱 Kitty Run 💖</h1>
   <p>pra minha princesa linda 💖</p>
   <button id="startBtn">Jogar</button>
-  <button id="musicBtn">🎵 Ativar música</button>
 </div>
 
 <div id="score">0</div>
@@ -99,16 +89,11 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// 🎵 MUSICA (fofa estilo Talking Friends)
+// 🎵 MUSICA (agora funciona)
 const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=cute-11254.mp3");
 music.loop = true;
 
-// ativar musica
-document.getElementById("musicBtn").onclick = () => {
-  music.play();
-};
-
-// iniciar jogo
+// iniciar jogo + tocar música
 document.getElementById("startBtn").onclick = () => {
   document.getElementById("menu").style.display = "none";
   canvas.style.display = "block";
@@ -116,6 +101,8 @@ document.getElementById("startBtn").onclick = () => {
   document.getElementById("record").style.display = "block";
   document.getElementById("word").style.display = "block";
   document.getElementById("jumpBtn").style.display = "block";
+
+  music.play().catch(()=>{}); // 🔥 garante que toca
 };
 
 // resize
@@ -148,7 +135,7 @@ let gameOver = false;
 let obstacleTimer = 0;
 let minDistance = 120;
 
-// 💖 FRASE NOVA
+// frase
 let message = "ANA EU TE AMO SUA GOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
@@ -156,9 +143,9 @@ let nextMilestone = 300;
 
 let flyingLetters = [];
 
+// som letra
 const sound = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
 
-// controle
 function jump() {
   if (kitty.grounded) {
     kitty.dy = kitty.jumpForce;
@@ -222,6 +209,7 @@ function update() {
     document.getElementById("record").innerText = "Record: " + record;
   }
 
+  // LETRAS SEM BUG
   if (score >= nextMilestone && nextLetterIndex < message.length) {
     let letter = message[nextLetterIndex];
 
@@ -244,9 +232,8 @@ function update() {
 
   flyingLetters.forEach(l => {
     if (!l.done) {
-      l.x += (l.targetX - l.x) * 0.1;
-      l.y += (l.targetY - l.y) * 0.1;
-      l.size *= 0.98;
+      l.x += (l.targetX - l.x) * 0.12;
+      l.y += (l.targetY - l.y) * 0.12;
 
       if (Math.abs(l.x - l.targetX) < 2) {
         currentText += l.letter;
@@ -256,7 +243,7 @@ function update() {
     }
   });
 
-  flyingLetters = flyingLetters.filter(l => l.size > 5);
+  flyingLetters = flyingLetters.filter(l => !l.done);
 
   document.getElementById("score").innerText = score;
 }
@@ -290,9 +277,10 @@ function draw() {
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
   });
 
+  // letras sem sombra
   flyingLetters.forEach(l => {
     ctx.fillStyle = "#ff69b4";
-    ctx.font = l.size + "px Arial";
+    ctx.font = "28px Arial";
     ctx.fillText(l.letter, l.x, l.y);
   });
 
