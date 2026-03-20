@@ -41,10 +41,6 @@
     font-size: 18px;
     border: none;
   }
-
-  #jumpBtn:active {
-    background: #ff1493;
-  }
 </style>
 </head>
 
@@ -82,7 +78,11 @@ let score = 0;
 let speed = 4;
 let gameOver = false;
 
-// EFEITO
+// 💡 CONTROLE DE DISTÂNCIA
+let obstacleTimer = 0;
+let minDistance = 120; // distância mínima entre obstáculos
+
+// 💖 EFEITO
 let showLove = false;
 let glowSize = 0;
 
@@ -116,13 +116,17 @@ function update() {
     kitty.grounded = true;
   }
 
-  if (Math.random() < 0.015) {
+  // 🚀 SPAWN CONTROLADO (AGORA FICA BOM)
+  obstacleTimer++;
+
+  if (obstacleTimer > minDistance) {
     obstacles.push({
       x: canvas.width,
       y: 190,
       width: 25,
       height: 35
     });
+    obstacleTimer = 0;
   }
 
   obstacles.forEach(obs => {
@@ -140,6 +144,7 @@ function update() {
 
   obstacles = obstacles.filter(o => o.x > -50);
 
+  // nuvens
   if (Math.random() < 0.01) {
     clouds.push({
       x: canvas.width,
@@ -153,17 +158,12 @@ function update() {
 
   score++;
 
-  // ATIVA MENSAGEM
-  if (score >= 1000) {
-    showLove = true;
-  }
-
-  if (score % 500 === 0) speed += 0.5;
+  if (score >= 1000) showLove = true;
 
   document.getElementById("score").innerText = score;
 }
 
-// DESENHO GATINHA
+// DESENHO
 function drawKitty() {
   ctx.fillStyle = "#fff";
   ctx.strokeStyle = "#000";
@@ -180,7 +180,6 @@ function drawKitty() {
   ctx.fillRect(kitty.x + 18, kitty.y + 18, 6, 4);
 }
 
-// DESENHO
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -204,12 +203,12 @@ function draw() {
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
   });
 
-  // 💖 EFEITO BRILHO
+  // 💖 brilho
   if (showLove) {
     glowSize += 0.5;
 
     ctx.save();
-    ctx.globalAlpha = 0.7;
+    ctx.globalAlpha = 0.6;
     ctx.fillStyle = "pink";
 
     ctx.beginPath();
@@ -245,6 +244,7 @@ function resetGame() {
   gameOver = false;
   showLove = false;
   glowSize = 0;
+  obstacleTimer = 0;
 }
 
 loop();
