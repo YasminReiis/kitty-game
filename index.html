@@ -17,7 +17,7 @@
     background: #fff;
   }
 
-  #menu {
+  #menu, #finalScreen {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -28,17 +28,20 @@
     align-items: center;
   }
 
-  #menu h1 {
+  #finalScreen {
+    display: none;
+    text-align: center;
+  }
+
+  h1 {
     color: #ff1493;
-    font-size: 40px;
   }
 
-  #menu p {
+  p {
     color: #ff69b4;
-    font-size: 14px;
   }
 
-  #startBtn {
+  button {
     padding: 15px 30px;
     border: none;
     border-radius: 30px;
@@ -52,9 +55,9 @@
     display: none;
   }
 
-  #score { position: absolute; top: 10px; right: 15px; color: #ff1493; }
-  #record { position: absolute; top: 30px; right: 15px; color: #ff69b4; }
-  #word { position: absolute; top: 10px; left: 20px; color: #ff1493; font-weight: bold; }
+  #score { position: absolute; top: 10px; right: 15px; }
+  #record { position: absolute; top: 30px; right: 15px; }
+  #word { position: absolute; top: 10px; left: 20px; font-weight: bold; }
 
   #jumpBtn {
     position: fixed;
@@ -65,7 +68,6 @@
     border-radius: 50%;
     background: #ff69b4;
     color: white;
-    border: none;
   }
 </style>
 </head>
@@ -76,6 +78,12 @@
   <h1>🐱 Kitty Run 💖</h1>
   <p>pra minha princesa linda 💖</p>
   <button id="startBtn">Jogar</button>
+</div>
+
+<div id="finalScreen">
+  <h1>💖 Ana, eu te amo 💖</h1>
+  <p>você é a melhor coisa da minha vida</p>
+  <button onclick="location.reload()">Jogar de novo</button>
 </div>
 
 <div id="score">0</div>
@@ -89,11 +97,14 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// 🎵 MUSICA (agora funciona)
-const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=cute-11254.mp3");
+// 🎵 música
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
 music.loop = true;
 
-// iniciar jogo + tocar música
+// 🎉 som final
+const finalSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+
+// iniciar
 document.getElementById("startBtn").onclick = () => {
   document.getElementById("menu").style.display = "none";
   canvas.style.display = "block";
@@ -101,8 +112,7 @@ document.getElementById("startBtn").onclick = () => {
   document.getElementById("record").style.display = "block";
   document.getElementById("word").style.display = "block";
   document.getElementById("jumpBtn").style.display = "block";
-
-  music.play().catch(()=>{}); // 🔥 garante que toca
+  music.play().catch(()=>{});
 };
 
 // resize
@@ -133,9 +143,8 @@ let obstacles = [];
 let score = 0;
 let gameOver = false;
 let obstacleTimer = 0;
-let minDistance = 120;
 
-// frase
+// 💖 FRASE
 let message = "ANA EU TE AMO SUA GOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
@@ -143,9 +152,10 @@ let nextMilestone = 300;
 
 let flyingLetters = [];
 
-// som letra
-const sound = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+// 💖 CORAÇÕES
+let hearts = [];
 
+// pulo
 function jump() {
   if (kitty.grounded) {
     kitty.dy = kitty.jumpForce;
@@ -158,9 +168,7 @@ function jump() {
 document.addEventListener("keydown", e => {
   if (e.code === "Space") jump();
 });
-
-document.getElementById("jumpBtn").addEventListener("click", jump);
-document.getElementById("jumpBtn").addEventListener("touchstart", jump);
+document.getElementById("jumpBtn").onclick = jump;
 
 // update
 function update() {
@@ -176,13 +184,8 @@ function update() {
   }
 
   obstacleTimer++;
-  if (obstacleTimer > minDistance) {
-    obstacles.push({
-      x: canvas.width,
-      y: 190,
-      width: 25,
-      height: 35
-    });
+  if (obstacleTimer > 120) {
+    obstacles.push({ x: canvas.width, y: 190, width: 25, height: 35 });
     obstacleTimer = 0;
   }
 
@@ -203,28 +206,16 @@ function update() {
 
   score++;
 
-  if (score > record) {
-    record = score;
-    localStorage.setItem("kittyRecord", record);
-    document.getElementById("record").innerText = "Record: " + record;
-  }
-
-  // LETRAS SEM BUG
+  // letras
   if (score >= nextMilestone && nextLetterIndex < message.length) {
-    let letter = message[nextLetterIndex];
-
     flyingLetters.push({
-      letter,
+      letter: message[nextLetterIndex],
       x: canvas.width / 2,
       y: canvas.height / 2,
       targetX: 20 + (nextLetterIndex * 15),
       targetY: 25,
-      size: 30,
       done: false
     });
-
-    sound.currentTime = 0;
-    sound.play();
 
     nextLetterIndex++;
     nextMilestone += 200;
@@ -232,8 +223,8 @@ function update() {
 
   flyingLetters.forEach(l => {
     if (!l.done) {
-      l.x += (l.targetX - l.x) * 0.12;
-      l.y += (l.targetY - l.y) * 0.12;
+      l.x += (l.targetX - l.x) * 0.1;
+      l.y += (l.targetY - l.y) * 0.1;
 
       if (Math.abs(l.x - l.targetX) < 2) {
         currentText += l.letter;
@@ -246,50 +237,65 @@ function update() {
   flyingLetters = flyingLetters.filter(l => !l.done);
 
   document.getElementById("score").innerText = score;
+
+  // 💖 FINAL
+  if (currentText === message) {
+    gameOver = true;
+    showFinal();
+  }
+}
+
+// 💖 FINAL
+function showFinal() {
+  music.pause();
+  finalSound.play();
+
+  document.getElementById("finalScreen").style.display = "flex";
+
+  // corações subindo
+  setInterval(() => {
+    hearts.push({
+      x: Math.random() * window.innerWidth,
+      y: window.innerHeight,
+      size: 20 + Math.random() * 20
+    });
+  }, 200);
+
+  animateHearts();
+}
+
+function animateHearts() {
+  const screen = document.getElementById("finalScreen");
+
+  hearts.forEach(h => {
+    h.y -= 2;
+    let heart = document.createElement("div");
+    heart.innerText = "💖";
+    heart.style.position = "absolute";
+    heart.style.left = h.x + "px";
+    heart.style.top = h.y + "px";
+    heart.style.fontSize = h.size + "px";
+    screen.appendChild(heart);
+  });
+
+  requestAnimationFrame(animateHearts);
 }
 
 // draw
-function drawKitty() {
-  ctx.fillStyle = "#fff";
-  ctx.strokeStyle = "#000";
-
-  ctx.fillRect(kitty.x, kitty.y, kitty.width, kitty.height);
-  ctx.strokeRect(kitty.x, kitty.y, kitty.width, kitty.height);
-
-  ctx.fillStyle = "#000";
-  ctx.fillRect(kitty.x + 10, kitty.y + 10, 5, 5);
-  ctx.fillRect(kitty.x + 25, kitty.y + 10, 5, 5);
-
-  ctx.fillStyle = "#ff69b4";
-  ctx.fillRect(kitty.x + 18, kitty.y + 18, 6, 4);
-}
-
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = "#ffb6c1";
   ctx.fillRect(0, 220, canvas.width, 5);
 
-  drawKitty();
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(kitty.x, kitty.y, 40, 40);
 
   ctx.fillStyle = "#ff1493";
-  obstacles.forEach(obs => {
-    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-  });
-
-  // letras sem sombra
-  flyingLetters.forEach(l => {
-    ctx.fillStyle = "#ff69b4";
-    ctx.font = "28px Arial";
-    ctx.fillText(l.letter, l.x, l.y);
-  });
-
-  if (gameOver) {
-    ctx.fillStyle = "#ff1493";
-    ctx.fillText("Toque para reiniciar 💖", 50, 120);
-  }
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
 }
 
+// loop
 function loop() {
   update();
   draw();
@@ -303,7 +309,6 @@ function resetGame() {
   currentText = "";
   nextLetterIndex = 0;
   nextMilestone = 300;
-  flyingLetters = [];
 }
 
 loop();
