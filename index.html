@@ -9,30 +9,62 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: linear-gradient(#ffeef5, #fff);
     font-family: Arial;
   }
 
   canvas {
-    display: block;
-    margin: auto;
+    display: none;
     background: #fff;
-    border-bottom: 4px solid #ff69b4;
+  }
+
+  /* 🌸 MENU */
+  #menu {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(#ffb6c1, #ffeef5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #menu h1 {
+    color: #ff1493;
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+
+  #menu p {
+    color: #ff69b4;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+
+  #startBtn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    background: #ff1493;
+    color: white;
+    font-size: 18px;
+  }
+
+  #score, #record, #word, #jumpBtn {
+    display: none;
   }
 
   #score {
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 18px;
     color: #ff1493;
   }
 
   #record {
     position: absolute;
-    top: 35px;
+    top: 30px;
     right: 15px;
-    font-size: 16px;
     color: #ff69b4;
   }
 
@@ -40,9 +72,8 @@
     position: absolute;
     top: 10px;
     left: 20px;
-    font-size: 22px;
-    color: #ff1493;
     font-weight: bold;
+    color: #ff1493;
   }
 
   #jumpBtn {
@@ -61,6 +92,13 @@
 
 <body>
 
+<!-- 🌸 MENU -->
+<div id="menu">
+  <h1>🐱 Kitty Run 💖</h1>
+  <p>pra minha princesa linda 💖</p>
+  <button id="startBtn">Jogar</button>
+</div>
+
 <div id="score">0</div>
 <div id="record">Record: 0</div>
 <div id="word"></div>
@@ -72,6 +110,17 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+// MENU
+document.getElementById("startBtn").onclick = () => {
+  document.getElementById("menu").style.display = "none";
+  canvas.style.display = "block";
+  document.getElementById("score").style.display = "block";
+  document.getElementById("record").style.display = "block";
+  document.getElementById("word").style.display = "block";
+  document.getElementById("jumpBtn").style.display = "block";
+};
+
+// resize
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = 250;
@@ -79,10 +128,11 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-// 💾 RECORD
+// record
 let record = localStorage.getItem("kittyRecord") || 0;
 document.getElementById("record").innerText = "Record: " + record;
 
+// player
 let kitty = {
   x: 80,
   y: 180,
@@ -97,25 +147,20 @@ let kitty = {
 let obstacles = [];
 let score = 0;
 let gameOver = false;
-
 let obstacleTimer = 0;
 let minDistance = 120;
 
-// 💖 TEXTO
+// texto
 let message = "ANA EU TE AMOGOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
 let nextMilestone = 300;
 
-// ✨ LETRAS ANIMADAS
 let flyingLetters = [];
 
-// 🔊 SOM
-function playSound() {
-  let audio = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
-  audio.play();
-}
+const sound = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
 
+// controle
 function jump() {
   if (kitty.grounded) {
     kitty.dy = kitty.jumpForce;
@@ -132,7 +177,7 @@ document.addEventListener("keydown", e => {
 document.getElementById("jumpBtn").addEventListener("click", jump);
 document.getElementById("jumpBtn").addEventListener("touchstart", jump);
 
-// UPDATE
+// update
 function update() {
   if (gameOver) return;
 
@@ -173,40 +218,43 @@ function update() {
 
   score++;
 
-  // 💾 SALVAR RECORD
   if (score > record) {
     record = score;
     localStorage.setItem("kittyRecord", record);
     document.getElementById("record").innerText = "Record: " + record;
   }
 
-  // 💖 LETRAS
   if (score >= nextMilestone && nextLetterIndex < message.length) {
     let letter = message[nextLetterIndex];
 
     flyingLetters.push({
-      letter: letter,
+      letter,
       x: canvas.width / 2,
       y: canvas.height / 2,
       targetX: 20 + (nextLetterIndex * 15),
       targetY: 25,
-      size: 30
+      size: 30,
+      done: false
     });
 
-    playSound();
+    sound.currentTime = 0;
+    sound.play();
 
     nextLetterIndex++;
     nextMilestone += 200;
   }
 
   flyingLetters.forEach(l => {
-    l.x += (l.targetX - l.x) * 0.08;
-    l.y += (l.targetY - l.y) * 0.08;
-    l.size *= 0.98;
+    if (!l.done) {
+      l.x += (l.targetX - l.x) * 0.1;
+      l.y += (l.targetY - l.y) * 0.1;
+      l.size *= 0.98;
 
-    if (Math.abs(l.x - l.targetX) < 1) {
-      currentText += l.letter;
-      document.getElementById("word").innerText = currentText;
+      if (Math.abs(l.x - l.targetX) < 2) {
+        currentText += l.letter;
+        document.getElementById("word").innerText = currentText;
+        l.done = true;
+      }
     }
   });
 
@@ -215,11 +263,10 @@ function update() {
   document.getElementById("score").innerText = score;
 }
 
-// DESENHO
+// draw
 function drawKitty() {
   ctx.fillStyle = "#fff";
   ctx.strokeStyle = "#000";
-  ctx.lineWidth = 2;
 
   ctx.fillRect(kitty.x, kitty.y, kitty.width, kitty.height);
   ctx.strokeRect(kitty.x, kitty.y, kitty.width, kitty.height);
@@ -253,12 +300,11 @@ function draw() {
 
   if (gameOver) {
     ctx.fillStyle = "#ff1493";
-    ctx.font = "20px Arial";
     ctx.fillText("Toque para reiniciar 💖", 50, 120);
   }
 }
 
-// LOOP
+// loop
 function loop() {
   update();
   draw();
