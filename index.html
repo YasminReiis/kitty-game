@@ -58,7 +58,6 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// RESPONSIVO
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = 250;
@@ -83,7 +82,11 @@ let score = 0;
 let speed = 4;
 let gameOver = false;
 
-// PULO (teclado + toque)
+// EFEITO
+let showLove = false;
+let glowSize = 0;
+
+// PULO
 function jump() {
   if (kitty.grounded) {
     kitty.dy = kitty.jumpForce;
@@ -137,7 +140,6 @@ function update() {
 
   obstacles = obstacles.filter(o => o.x > -50);
 
-  // nuvens
   if (Math.random() < 0.01) {
     clouds.push({
       x: canvas.width,
@@ -150,12 +152,18 @@ function update() {
   clouds = clouds.filter(c => c.x > -50);
 
   score++;
+
+  // ATIVA MENSAGEM
+  if (score >= 1000) {
+    showLove = true;
+  }
+
   if (score % 500 === 0) speed += 0.5;
 
   document.getElementById("score").innerText = score;
 }
 
-// DESENHO
+// DESENHO GATINHA
 function drawKitty() {
   ctx.fillStyle = "#fff";
   ctx.strokeStyle = "#000";
@@ -172,6 +180,7 @@ function drawKitty() {
   ctx.fillRect(kitty.x + 18, kitty.y + 18, 6, 4);
 }
 
+// DESENHO
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -195,6 +204,25 @@ function draw() {
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
   });
 
+  // 💖 EFEITO BRILHO
+  if (showLove) {
+    glowSize += 0.5;
+
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = "pink";
+
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, 80, glowSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    ctx.fillStyle = "#ff1493";
+    ctx.font = "32px Arial";
+    ctx.fillText("Ana te amo 💖", canvas.width/2 - 110, 90);
+  }
+
   if (gameOver) {
     ctx.fillStyle = "#ff1493";
     ctx.font = "20px Arial";
@@ -215,6 +243,8 @@ function resetGame() {
   score = 0;
   speed = 4;
   gameOver = false;
+  showLove = false;
+  glowSize = 0;
 }
 
 loop();
