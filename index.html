@@ -17,7 +17,6 @@
     background: #fff;
   }
 
-  /* 🌸 MENU */
   #menu {
     position: absolute;
     width: 100%;
@@ -32,13 +31,11 @@
   #menu h1 {
     color: #ff1493;
     font-size: 40px;
-    margin-bottom: 10px;
   }
 
   #menu p {
     color: #ff69b4;
     font-size: 14px;
-    margin-bottom: 30px;
   }
 
   #startBtn {
@@ -48,33 +45,25 @@
     background: #ff1493;
     color: white;
     font-size: 18px;
+    margin-top: 20px;
+  }
+
+  #musicBtn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    background: #ff69b4;
+    color: white;
   }
 
   #score, #record, #word, #jumpBtn {
     display: none;
   }
 
-  #score {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    color: #ff1493;
-  }
-
-  #record {
-    position: absolute;
-    top: 30px;
-    right: 15px;
-    color: #ff69b4;
-  }
-
-  #word {
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    font-weight: bold;
-    color: #ff1493;
-  }
+  #score { position: absolute; top: 10px; right: 15px; color: #ff1493; }
+  #record { position: absolute; top: 30px; right: 15px; color: #ff69b4; }
+  #word { position: absolute; top: 10px; left: 20px; color: #ff1493; font-weight: bold; }
 
   #jumpBtn {
     position: fixed;
@@ -92,11 +81,11 @@
 
 <body>
 
-<!-- 🌸 MENU -->
 <div id="menu">
   <h1>🐱 Kitty Run 💖</h1>
   <p>pra minha princesa linda 💖</p>
   <button id="startBtn">Jogar</button>
+  <button id="musicBtn">🎵 Ativar música</button>
 </div>
 
 <div id="score">0</div>
@@ -110,7 +99,16 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// MENU
+// 🎵 MUSICA (fofa estilo Talking Friends)
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=cute-11254.mp3");
+music.loop = true;
+
+// ativar musica
+document.getElementById("musicBtn").onclick = () => {
+  music.play();
+};
+
+// iniciar jogo
 document.getElementById("startBtn").onclick = () => {
   document.getElementById("menu").style.display = "none";
   canvas.style.display = "block";
@@ -150,8 +148,8 @@ let gameOver = false;
 let obstacleTimer = 0;
 let minDistance = 120;
 
-// texto
-let message = "ANA EU TE AMOGOSTOSA";
+// 💖 FRASE NOVA
+let message = "ANA EU TE AMO SUA GOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
 let nextMilestone = 300;
@@ -304,7 +302,6 @@ function draw() {
   }
 }
 
-// loop
 function loop() {
   update();
   draw();
