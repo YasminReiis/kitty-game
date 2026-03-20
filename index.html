@@ -28,11 +28,19 @@
     color: #ff1493;
   }
 
+  #record {
+    position: absolute;
+    top: 35px;
+    right: 15px;
+    font-size: 16px;
+    color: #ff69b4;
+  }
+
   #word {
     position: absolute;
     top: 10px;
     left: 20px;
-    font-size: 20px;
+    font-size: 22px;
     color: #ff1493;
     font-weight: bold;
   }
@@ -54,7 +62,9 @@
 <body>
 
 <div id="score">0</div>
+<div id="record">Record: 0</div>
 <div id="word"></div>
+
 <canvas id="game"></canvas>
 <button id="jumpBtn">Pular</button>
 
@@ -68,6 +78,10 @@ function resize() {
 }
 resize();
 window.addEventListener("resize", resize);
+
+// 💾 RECORD
+let record = localStorage.getItem("kittyRecord") || 0;
+document.getElementById("record").innerText = "Record: " + record;
 
 let kitty = {
   x: 80,
@@ -87,11 +101,20 @@ let gameOver = false;
 let obstacleTimer = 0;
 let minDistance = 120;
 
-// 💖 PALAVRAS
+// 💖 TEXTO
 let message = "ANA EU TE AMOGOSTOSA";
 let currentText = "";
 let nextLetterIndex = 0;
-let nextMilestone = 300; // começa no 300
+let nextMilestone = 300;
+
+// ✨ LETRAS ANIMADAS
+let flyingLetters = [];
+
+// 🔊 SOM
+function playSound() {
+  let audio = new Audio("https://actions.google.com/sounds/v1/cartoon/pop.ogg");
+  audio.play();
+}
 
 function jump() {
   if (kitty.grounded) {
@@ -150,15 +173,46 @@ function update() {
 
   score++;
 
-  // 💖 LIBERAR LETRAS
-  if (score >= nextMilestone && nextLetterIndex < message.length) {
-    currentText += message[nextLetterIndex];
-    nextLetterIndex++;
-    nextMilestone += 200; // próximo a cada 200 pontos
+  // 💾 SALVAR RECORD
+  if (score > record) {
+    record = score;
+    localStorage.setItem("kittyRecord", record);
+    document.getElementById("record").innerText = "Record: " + record;
   }
 
+  // 💖 LETRAS
+  if (score >= nextMilestone && nextLetterIndex < message.length) {
+    let letter = message[nextLetterIndex];
+
+    flyingLetters.push({
+      letter: letter,
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      targetX: 20 + (nextLetterIndex * 15),
+      targetY: 25,
+      size: 30
+    });
+
+    playSound();
+
+    nextLetterIndex++;
+    nextMilestone += 200;
+  }
+
+  flyingLetters.forEach(l => {
+    l.x += (l.targetX - l.x) * 0.08;
+    l.y += (l.targetY - l.y) * 0.08;
+    l.size *= 0.98;
+
+    if (Math.abs(l.x - l.targetX) < 1) {
+      currentText += l.letter;
+      document.getElementById("word").innerText = currentText;
+    }
+  });
+
+  flyingLetters = flyingLetters.filter(l => l.size > 5);
+
   document.getElementById("score").innerText = score;
-  document.getElementById("word").innerText = currentText;
 }
 
 // DESENHO
@@ -191,6 +245,12 @@ function draw() {
     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
   });
 
+  flyingLetters.forEach(l => {
+    ctx.fillStyle = "#ff69b4";
+    ctx.font = l.size + "px Arial";
+    ctx.fillText(l.letter, l.x, l.y);
+  });
+
   if (gameOver) {
     ctx.fillStyle = "#ff1493";
     ctx.font = "20px Arial";
@@ -212,6 +272,7 @@ function resetGame() {
   currentText = "";
   nextLetterIndex = 0;
   nextMilestone = 300;
+  flyingLetters = [];
 }
 
 loop();
